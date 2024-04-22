@@ -134,12 +134,12 @@ export class Address extends React.Component {
     }
 
     renderDisplay() {
-        let number = this.props.addressDetails && this.props.addressDetails.number ? this.props.addressDetails.number : "";
-        let street = this.props.addressDetails && this.props.addressDetails.street ? this.props.addressDetails.street : "";
-        let suburb = this.props.addressDetails && this.props.addressDetails.suburb ? this.props.addressDetails.suburb : "";
-        let postCode = this.props.addressDetails && this.props.addressDetails.postCode ? this.props.addressDetails.postCode : "";
+        let number = this.props.addressDetails && this.props.addressDetails.number ? `${this.props.addressDetails.number},`: "";
+        let street = this.props.addressDetails && this.props.addressDetails.street ? `${this.props.addressDetails.street},` : "";
+        let suburb = this.props.addressDetails && this.props.addressDetails.suburb ? `${this.props.addressDetails.suburb},` : "";
+        let postCode = this.props.addressDetails && this.props.addressDetails.postCode ? `${this.props.addressDetails.postCode},` : "";
 
-        let fulladdress = `${number}, ${street}, ${suburb}, ${postCode}`;
+        let fulladdress = `${number} ${street} ${suburb} ${postCode}`;
         let addresscity = this.props.addressDetails && this.props.addressDetails.city ? this.props.addressDetails.city : "";
         let addresscountry = this.props.addressDetails && this.props.addressDetails.country  ? this.props.addressDetails.country : "";
 
