@@ -20,40 +20,47 @@ export class IndividualDetailSection extends Component {
             newContact: details
         }
 
-        this.openEdit = this.openEdit.bind(this)
-        this.closeEdit = this.closeEdit.bind(this)
-        this.handleChange = this.handleChange.bind(this)
-        this.saveContact = this.saveContact.bind(this)
-        this.renderEdit = this.renderEdit.bind(this)
-        this.renderDisplay = this.renderDisplay.bind(this)
+        this.openEdit = this.openEdit.bind(this);
+        this.closeEdit = this.closeEdit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.saveContact = this.saveContact.bind(this);
+        this.renderEdit = this.renderEdit.bind(this);
+        this.renderDisplay = this.renderDisplay.bind(this);
     }
 
     openEdit() {
-        const details = Object.assign({}, this.props.details)
+        const details = Object.assign({}, this.props.details);
         this.setState({
             showEditSection: true,
             newContact: details
-        })
+        });
     }
 
     closeEdit() {
         this.setState({
             showEditSection: false
-        })
+        });
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newContact)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newContact);
+        data[event.target.name] = event.target.value;
         this.setState({
             newContact: data
-        })
+        });
     }
 
     saveContact() {
-        const data = Object.assign({}, this.state.newContact)
-        this.props.controlFunc(this.props.componentId, data)
-        this.closeEdit()
+        const { firstName, lastName, email } = this.state.newContact;
+        
+        if (!firstName || !lastName || !email) {
+            TalentUtil.notification.show("Please enter user details", "error", null, null);
+        }
+        else { 
+            const data = Object.assign({}, this.state.newContact);
+            this.props.controlFunc(this.props.componentId, data);
+            this.closeEdit();
+        }
     }
 
     render() {

@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Collections.Sequences;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Talent.Services.Profile.Domain.Services
 {
@@ -50,214 +51,336 @@ namespace Talent.Services.Profile.Domain.Services
 
         public async Task<AddSkillViewModel> AddNewSkill(AddSkillViewModel skill, string currentUserId)
         {
-            if (skill != null)
+            try
             {
-                var user = await _userRepository.GetByIdAsync(currentUserId);
-                skill.Id = ObjectId.GenerateNewId().ToString();
-              
-                var uskill = new UserSkill();
-                uskill.Id = skill.Id;
-                uskill.Skill = skill.Name;
-                uskill.ExperienceLevel = skill.Level;
-                uskill.IsDeleted = false;
-                uskill.UserId = currentUserId;
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
 
-                user.Skills.Add(uskill);
-                await _userRepository.Update(user);
-                return skill;
+                    if (user != null && skill != null)
+                    {
+                        skill.Id = ObjectId.GenerateNewId().ToString();
+
+                        var userkill = new UserSkill();
+                        userkill.Id = skill.Id;
+                        userkill.Skill = skill.Name;
+                        userkill.ExperienceLevel = skill.Level;
+                        userkill.IsDeleted = false;
+                        userkill.UserId = currentUserId;
+
+                        user.Skills.Add(userkill);
+                        await _userRepository.Update(user);
+                        return skill;
+                    }
+                    return null;  
+                }
+                return null;
             }
-            return null;
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while adding new skill: " + ex.Message);
+                return null;
+            }
         }
 
         public async Task<bool> DeleteSkill(string id, string currentUserId)
         {
-            var user = await _userRepository.GetByIdAsync(currentUserId);
-            var skill = user.Skills.Find(skll => skll.Id == id);
-
-            if (skill == null)
+            try
             {
+                if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(id))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    var skill = user.Skills.Find(skll => skll.Id == id);
+                    if (user != null && skill != null)
+                    {
+                        user.Skills.Remove(skill);
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
                 return false;
             }
-
-            user.Skills.Remove(skill);
-            await _userRepository.Update(user);
-
-            return true;
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while deleting skill: " + ex.Message);
+                return false;
+            }
         }
 
-        public async Task<AddSkillViewModel> EditSkill(AddSkillViewModel skill, string id, string currentUserId)
+        public async Task<bool> EditSkill(AddSkillViewModel skill, string id, string currentUserId)
         {
-            if (skill != null)
+            try
             {
-                var user = await _userRepository.GetByIdAsync(currentUserId);
-                var skills = user.Skills.SingleOrDefault(x => x.Id == id);
-
-                UpdateSkillFromView(skill, skills);
-                await _userRepository.Update(user);
-                return skill;
+                if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(id))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    var skills = user.Skills.SingleOrDefault(x => x.Id == id);
+                    if (user != null && skill != null)
+                    {
+                        UpdateSkillFromView(skill, skills);
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
             }
-            return null;
+            catch(Exception ex)
+            {
+                Console.WriteLine("An error occurred while editing skill: " + ex.Message);
+                return false;
+            }
         }
 
         public async Task<ExperienceViewModel> AddNewExperience(ExperienceViewModel experience, string currentUserId)
         {
-            if (experience != null)
+            try
             {
-                var user = await _userRepository.GetByIdAsync(currentUserId);
-                experience.Id = ObjectId.GenerateNewId().ToString();
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    if (user != null && experience != null)
+                    {
+                        experience.Id = ObjectId.GenerateNewId().ToString();
+                        var usexp = new UserExperience();
+                        usexp.Id = experience.Id;
+                        usexp.Company = experience.Company;
+                        usexp.Position = experience.Position;
+                        usexp.Start = experience.Start;
+                        usexp.End = experience.End;
+                        usexp.Responsibilities = experience.Responsibilities;
 
-                var usexp = new UserExperience();
-                usexp.Id = experience.Id;
-                usexp.Company = experience.Company;
-                usexp.Position = experience.Position;
-                usexp.Start = experience.Start;
-                usexp.End = experience.End;
-                usexp.Responsibilities = experience.Responsibilities;
-
-                user.Experience.Add(usexp);
-                await _userRepository.Update(user);
-                return experience;
+                        user.Experience.Add(usexp);
+                        await _userRepository.Update(user);
+                        return experience;
+                    }
+                    return null;
+                }
+                return null;
             }
-            return null;
+            catch(Exception ex)
+            {
+                Console.WriteLine("An error occurred while adding new experience: " + ex.Message);
+                return null;
+            }   
         }
 
         public async Task<bool> DeleteExperience(string id, string currentUserId)
         {
-            var user = await _userRepository.GetByIdAsync(currentUserId);
-            var experience = user.Experience.Find(exp => exp.Id == id);
-
-            if (experience == null)
+            try
             {
+                if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(id))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    var experience = user.Experience.Find(exp => exp.Id == id);
+                    if (user != null && experience != null)
+                    {
+                        user.Experience.Remove(experience);
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while deleting experience: " + ex.Message);
                 return false;
             }
 
-            user.Experience.Remove(experience);
-            await _userRepository.Update(user);
-
-            return true;
         }
 
-        public async Task<ExperienceViewModel> EditExperience(ExperienceViewModel experience, string id, string currentUserId)
+        public async Task<bool> EditExperience(ExperienceViewModel experience, string id, string currentUserId)
         {
-            if (experience != null)
+            try
             {
-                var user = await _userRepository.GetByIdAsync(currentUserId);
-                var experiences = user.Experience.SingleOrDefault(x => x.Id == id);
-
-                UpdateExperienceFromView(experience, experiences);
-                await _userRepository.Update(user);
-                return experience;
+                if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(id))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    var experiences = user.Experience.SingleOrDefault(x => x.Id == id);
+                    if (user != null && experience != null)
+                    {
+                        UpdateExperienceFromView(experience, experiences);
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
             }
-            return null;
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while editing experience: " + ex.Message);
+                return false;
+            }
         }
 
         public async Task<AddLanguageViewModel> AddNewLanguage(AddLanguageViewModel language, string currentUserId)
         {
-            if (language != null)
+            try
             {
-                var user = await _userRepository.GetByIdAsync(currentUserId);
-                language.Id = ObjectId.GenerateNewId().ToString();
-                language.CurrentUserId = currentUserId;
-
-                var ulang = new UserLanguage();
-                ulang.Id = language.Id;
-                ulang.Language = language.Name;
-                ulang.LanguageLevel = language.Level;
-                ulang.IsDeleted = false;
-                ulang.UserId = language.CurrentUserId;
-
-                user.Languages.Add(ulang);
-                await _userRepository.Update(user);
-                return language;
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    if (user != null && language != null)
+                    {
+                        language.Id = ObjectId.GenerateNewId().ToString();
+                        language.CurrentUserId = currentUserId;
+                        var ulang = new UserLanguage();
+                        ulang.Id = language.Id;
+                        ulang.Language = language.Name;
+                        ulang.LanguageLevel = language.Level;
+                        ulang.IsDeleted = false;
+                        ulang.UserId = language.CurrentUserId;
+                        user.Languages.Add(ulang);
+                        await _userRepository.Update(user);
+                        return language;
+                    }
+                    return null;
+                }
+                return null;
             }
-            return null;
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while adding new language: " + ex.Message);
+                return null;
+            }
         }
 
         public async Task<bool> DeleteLanguage(string id, string currentUserId)
         {
-            var user = await _userRepository.GetByIdAsync(currentUserId);
-            var language = user.Languages.Find(lang => lang.Id == id);
-            
-            if (language == null)
+            try
             {
+                if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(id))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    var language = user.Languages.Find(lang => lang.Id == id);
+                    if (user != null && language != null)
+                    {
+                        user.Languages.Remove(language);
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
                 return false;
             }
-
-            user.Languages.Remove(language);
-            await _userRepository.Update(user);
-
-            return true;
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while deleting language: " + ex.Message);
+                return false;
+            }
         }
 
-        public async Task<AddLanguageViewModel> EditLanguage(AddLanguageViewModel language, string id, string currentUserId)
+        public async Task<bool> EditLanguage(AddLanguageViewModel language, string id, string currentUserId)
         {
-            if (language != null)
+            try
             {
-                var user = await _userRepository.GetByIdAsync(currentUserId);
-                var languages = user.Languages.SingleOrDefault(x => x.Id == id);
-
-                UpdatelanguageFromView(language, languages);
-                await _userRepository.Update(user);
-                return language;
+                if (!string.IsNullOrEmpty(currentUserId) && !string.IsNullOrEmpty(id))
+                {
+                    var user = await _userRepository.GetByIdAsync(currentUserId);
+                    var languages = user.Languages.SingleOrDefault(x => x.Id == id);
+                    if (user != null && language != null)
+                    {
+                        UpdatelanguageFromView(language, languages);
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
             }
-            return null;
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while editing language: " + ex.Message);
+                return false;
+            }
         }
 
         public async Task<TalentProfileViewModel> GetTalentProfile(string Id)
         {
-            User Talentprofile = null;
-            Talentprofile = await _userRepository.GetByIdAsync(Id);
-            var languages = Talentprofile.Languages.Select(x => ViewModelFromLanguage(x)).ToList();
-            var skills = Talentprofile.Skills.Select(y => ViewModelFromSkill(y)).ToList();
-            var experience = Talentprofile.Experience.Select(z => ViewModelFromExperience(z)).ToList();
-
-            if (Talentprofile != null)
+            try
             {
-                var result = new TalentProfileViewModel
+                if (!string.IsNullOrEmpty(Id))
                 {
-                    Id = Talentprofile.Id,
-                    FirstName = Talentprofile.FirstName,
-                    LastName = Talentprofile.LastName,
-                    Email = Talentprofile.Email,
-                    Phone = Talentprofile.Phone,
-                    LinkedAccounts = Talentprofile.LinkedAccounts,
-                    Address = Talentprofile.Address,
-                    Nationality = Talentprofile.Nationality,
-                    Summary = Talentprofile.Summary,
-                    Description = Talentprofile.Description,
-                    JobSeekingStatus = Talentprofile.JobSeekingStatus,
-                    VisaStatus = Talentprofile.VisaStatus,
-                    VisaExpiryDate = Talentprofile.VisaExpiryDate,
-                    ProfilePhoto = Talentprofile.ProfilePhoto,
-                    ProfilePhotoUrl = Talentprofile.ProfilePhotoUrl,
-                    Languages = languages,
-                    Skills = skills,
-                    Experience = experience
-                };
-                return result;
+                    User Talentprofile = null;
+                    Talentprofile = await _userRepository.GetByIdAsync(Id);
+                    var languages = Talentprofile.Languages.Select(x => ViewModelFromLanguage(x)).ToList();
+                    var skills = Talentprofile.Skills.Select(y => ViewModelFromSkill(y)).ToList();
+                    var experience = Talentprofile.Experience.Select(z => ViewModelFromExperience(z)).ToList();
+                    if (Talentprofile != null)
+                    {
+                        var result = new TalentProfileViewModel
+                        {
+                            Id = Talentprofile.Id,
+                            FirstName = Talentprofile.FirstName,
+                            LastName = Talentprofile.LastName,
+                            Email = Talentprofile.Email,
+                            Phone = Talentprofile.Phone,
+                            LinkedAccounts = Talentprofile.LinkedAccounts,
+                            Address = Talentprofile.Address,
+                            Nationality = Talentprofile.Nationality,
+                            Summary = Talentprofile.Summary,
+                            Description = Talentprofile.Description,
+                            JobSeekingStatus = Talentprofile.JobSeekingStatus,
+                            VisaStatus = Talentprofile.VisaStatus,
+                            VisaExpiryDate = Talentprofile.VisaExpiryDate,
+                            ProfilePhoto = Talentprofile.ProfilePhoto,
+                            ProfilePhotoUrl = Talentprofile.ProfilePhotoUrl,
+                            Languages = languages,
+                            Skills = skills,
+                            Experience = experience
+                        };
+                        return result;
+                    }
+                    return null;
+                }
+                return null;
             }
-            return null;
+            catch(Exception ex)
+            {
+                Console.WriteLine("An error occurred while getting talent profile: " + ex.Message);
+                return null;
+            }
         }
 
         public async Task<bool> UpdateTalentProfile(TalentProfileViewModel model, string updaterId)
         {
-            var user = await _userRepository.GetByIdAsync(updaterId);
-            user.LinkedAccounts = model.LinkedAccounts;
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName; 
-            user.Email = model.Email;
-            user.Phone = model.Phone;
-            user.Address = model.Address;
-            user.Nationality = model.Nationality;
-            user.Summary = model.Summary;
-            user.Description = model.Description;
-            user.JobSeekingStatus = model.JobSeekingStatus;
-            user.VisaStatus = model.VisaStatus;
-            user.VisaExpiryDate = model.VisaExpiryDate;
-            user.ProfilePhoto = model.ProfilePhoto;
-            user.ProfilePhotoUrl = model.ProfilePhotoUrl;
-            await _userRepository.Update(user);
-            return true;
+            try
+            {
+                if (!string.IsNullOrEmpty(updaterId))
+                {
+                    var user = await _userRepository.GetByIdAsync(updaterId);
+                    if (user != null)
+                    {
+                        user.LinkedAccounts = model.LinkedAccounts;
+                        user.FirstName = model.FirstName;
+                        user.LastName = model.LastName;
+                        user.Email = model.Email;
+                        user.Phone = model.Phone;
+                        user.Address = model.Address;
+                        user.Nationality = model.Nationality;
+                        user.Summary = model.Summary;
+                        user.Description = model.Description;
+                        user.JobSeekingStatus = model.JobSeekingStatus;
+                        user.VisaStatus = model.VisaStatus;
+                        user.VisaExpiryDate = model.VisaExpiryDate;
+                        user.ProfilePhoto = model.ProfilePhoto;
+                        user.ProfilePhotoUrl = model.ProfilePhotoUrl;
+                        await _userRepository.Update(user);
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while updating talent profile: " + ex.Message);
+                return false;
+            }
         }
 
         public async Task<EmployerProfileViewModel> GetEmployerProfile(string Id, string role)
@@ -427,41 +550,49 @@ namespace Talent.Services.Profile.Domain.Services
 
         public async Task<bool> UpdateTalentPhoto(string talentId, IFormFile file)
         {
-            var fileExtension = Path.GetExtension(file.FileName);
-            List<string> acceptedExtensions = new List<string> { ".jpg", ".png", ".gif", ".jpeg" };
-
-            if (fileExtension != null && !acceptedExtensions.Contains(fileExtension.ToLower()))
+            try
             {
-                return false;
-            }
-
-            var talentProfile = (await _userRepository.Get(x => x.Id == talentId)).SingleOrDefault();
-
-            if (talentProfile == null)
-            {
-                return false;
-            }
-
-            var newFileName = await _fileService.SaveFile(file, FileType.ProfilePhoto);
-
-            if (!string.IsNullOrWhiteSpace(newFileName))
-            {
-                var oldFileName = talentProfile.ProfilePhoto;
-
-                if (!string.IsNullOrWhiteSpace(oldFileName))
+                if (!string.IsNullOrEmpty(talentId))
                 {
-                    await _fileService.DeleteFile(oldFileName, FileType.ProfilePhoto);
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    List<string> acceptedExtensions = new List<string> { ".jpg", ".png", ".gif", ".jpeg" };
+                    if (fileExtension != null && !acceptedExtensions.Contains(fileExtension.ToLower()))
+                    {
+                        return false;
+                    }
+
+                    var talentProfile = (await _userRepository.Get(x => x.Id == talentId)).SingleOrDefault();
+                    if (talentProfile == null)
+                    {
+                        return false;
+                    }
+                    var newFileName = await _fileService.SaveFile(file, FileType.ProfilePhoto);
+
+                    if (!string.IsNullOrWhiteSpace(newFileName))
+                    {
+                        var oldFileName = talentProfile.ProfilePhoto;
+
+                        if (!string.IsNullOrWhiteSpace(oldFileName))
+                        {
+                            await _fileService.DeleteFile(oldFileName, FileType.ProfilePhoto);
+                        }
+
+                        talentProfile.ProfilePhoto = newFileName;
+                        talentProfile.ProfilePhotoUrl = await _fileService.GetFileURL(newFileName, FileType.ProfilePhoto);
+
+                        await _userRepository.Update(talentProfile);
+                        return true;
+                    }
+                    return false;
                 }
-
-                talentProfile.ProfilePhoto = newFileName;
-                talentProfile.ProfilePhotoUrl = await _fileService.GetFileURL(newFileName, FileType.ProfilePhoto);
-
-                await _userRepository.Update(talentProfile);
-                return true;
+                return false;
             }
+            catch(Exception ex)
+            {
+                Console.WriteLine("An error occurred while updating talent photo: " + ex.Message);
+                return false;
 
-            return false;
-
+            }
         }
 
         public async Task<bool> AddTalentVideo(string talentId, IFormFile file)

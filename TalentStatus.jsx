@@ -16,20 +16,16 @@ export default class TalentStatus extends React.Component {
             newStatus: status
         }
 
-        this.handleChange = this.handleChange.bind(this)
+        this.handleChange = this.handleChange.bind(this);
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newStatus)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newStatus);
+        data[event.target.name] = event.target.value;
         this.setState({
             newStatus: data
-        })
-        this.props.controlFunc(this.props.componentId, { jobSeekingStatus : data })
-    }
-
-    componentDidMount() {
-
+        });
+        this.props.controlFunc(this.props.componentId, { jobSeekingStatus: data });
     }
     
     render() {

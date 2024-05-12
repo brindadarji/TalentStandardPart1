@@ -18,43 +18,43 @@ export default class SocialMediaLinkedAccount extends React.Component {
             showEditSection: false,
             newLinked: linkedDetails
         }
-        this.openEdit = this.openEdit.bind(this)
-        this.closeEdit = this.closeEdit.bind(this)
-        this.handleChange = this.handleChange.bind(this)
-        this.saveLinked = this.saveLinked.bind(this)
-        this.renderEdit = this.renderEdit.bind(this)
-        this.renderDisplay = this.renderDisplay.bind(this)
+        this.openEdit = this.openEdit.bind(this);
+        this.closeEdit = this.closeEdit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.saveLinked = this.saveLinked.bind(this);
+        this.renderEdit = this.renderEdit.bind(this);
+        this.renderDisplay = this.renderDisplay.bind(this);
     }
 
     openEdit() {
-        const linkedDetails = Object.assign({}, this.props.linkedDetails)
+        const linkedDetails = Object.assign({}, this.props.linkedDetails);
         this.setState({
             showEditSection: true,
             newLinked: linkedDetails
-        })
+        });
     }
 
     closeEdit() {
         this.setState({
             showEditSection: false
-        })
+        });
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newLinked)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newLinked);
+        data[event.target.name] = event.target.value;
         this.setState({
             newLinked: data
-        })
+        });
     }
 
     saveLinked() {
         const data = {
             linkedIn: this.state.newLinked.linkedIn,
             github: this.state.newLinked.github
-        }
-        this.props.controlFunc(this.props.componentId, { linkedAccounts: data })
-        this.closeEdit()
+        };
+        this.props.controlFunc(this.props.componentId, { linkedAccounts: data });
+        this.closeEdit();
     }
 
     componentDidMount() {

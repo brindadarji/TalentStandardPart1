@@ -62,7 +62,7 @@ export default class AccountProfile extends React.Component {
         let loaderData = this.state.loaderData;
         loaderData.allowedUsers.push("Talent");
         loaderData.isLoading = false;
-        this.setState({ loaderData, })
+        this.setState({ loaderData })
     }
 
     componentDidMount() {
@@ -82,7 +82,7 @@ export default class AccountProfile extends React.Component {
                 dataType: "json",
                 success: function (res) {
                     let profileData = null;
-                    if (res.data) {
+                    if (res.success) {
                         profileData = res.data
                         console.log("profileData", profileData)
                     }
@@ -145,7 +145,7 @@ export default class AccountProfile extends React.Component {
 
                 success: function (res) {
                     console.log(res)
-                    if (res.success == true) {
+                    if (res.success) {
                         TalentUtil.notification.show("Profile updated sucessfully", "success", null, null)
                     } else {
                         TalentUtil.notification.show("Profile did not update successfully", "error", null, null)
@@ -351,7 +351,7 @@ export default class AccountProfile extends React.Component {
                                         </FormItemWrapper>
                                     </div>
                                 </form>
-                            </div >
+                            </div>
                         </div>
                     </div>
                 </section>

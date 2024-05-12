@@ -15,16 +15,13 @@ export default class VisaStatus extends React.Component {
             newVisa: visaDetails
         }
 
-        this.handleChange = this.handleChange.bind(this)
-        this.saveStatus = this.saveStatus.bind(this)
-    }
-
-    componentDidMount() {
+        this.handleChange = this.handleChange.bind(this);
+        this.saveStatus = this.saveStatus.bind(this);
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newVisa)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newVisa);
+        data[event.target.name] = event.target.value;
         this.setState({
             newVisa: data,
             }, () => {
@@ -35,16 +32,17 @@ export default class VisaStatus extends React.Component {
     }
 
     saveStatus() {
-        const data = Object.assign({}, this.state.newVisa)
-        this.props.controlFunc(this.props.componentId, data )
+        const data = Object.assign({}, this.state.newVisa);
+        this.props.controlFunc(this.props.componentId, data);
     }
 
 
     render() {
-        let visa = this.state.newVisa.visaStatus ? this.state.newVisa.visaStatus : this.props.visaDetails.visaStatus;
-        let visaDate = this.state.newVisa.visaExpiryDate ? this.state.newVisa.visaExpiryDate : this.props.visaDetails.visaExpiryDate;
+        let visa = this.state.newVisa && this.state.newVisa.visaStatus ? this.state.newVisa.visaStatus : this.props.visaDetails.visaStatus;
+        let visaDate = this.state.newVisa && this.state.newVisa.visaExpiryDate ? this.state.newVisa.visaExpiryDate : this.props.visaDetails.visaExpiryDate;
         let visaexpiryDate;
-        if (visaDate) {
+       
+        if (visaDate && visaDate.length > 0) {
             visaexpiryDate = visaDate.split('T')[0];
         } else {
             visaexpiryDate = '';

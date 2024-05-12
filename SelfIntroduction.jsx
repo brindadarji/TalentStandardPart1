@@ -18,45 +18,41 @@ export default class SelfIntroduction extends React.Component {
             
         }
 
-        this.openEdit = this.openEdit.bind(this)
-        this.closeEdit = this.closeEdit.bind(this)
-        this.handleChange = this.handleChange.bind(this)
-        this.saveSumDes = this.saveSumDes.bind(this)
-        this.renderEdit = this.renderEdit.bind(this)
-        this.renderDisplay = this.renderDisplay.bind(this)
+        this.openEdit = this.openEdit.bind(this);
+        this.closeEdit = this.closeEdit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.saveSumDes = this.saveSumDes.bind(this);
+        this.renderEdit = this.renderEdit.bind(this);
+        this.renderDisplay = this.renderDisplay.bind(this);
     };
 
 
     openEdit() {
-        const selfIntroDetails = Object.assign({}, this.props.selfIntroDetails)
+        const selfIntroDetails = Object.assign({}, this.props.selfIntroDetails);
         this.setState({
             showEditSection: true,
             newSelfIntro: selfIntroDetails,
-        })
+        });
     }
 
     closeEdit() {
         this.setState({
             showEditSection: false
-        })
+        });
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newSelfIntro)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newSelfIntro);
+        data[event.target.name] = event.target.value;
         this.setState({
             newSelfIntro: data
-        })
+        });
     }
 
     saveSumDes() {
-        const data = Object.assign({}, this.state.newSelfIntro)
-        this.props.controlFunc(this.props.componentId, data)
-        this.closeEdit()
-    }
-
-    componentDidMount() {
-
+        const data = Object.assign({}, this.state.newSelfIntro);
+        this.props.controlFunc(this.props.componentId, data);
+        this.closeEdit();
     }
 
     render() {

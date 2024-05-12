@@ -26,13 +26,23 @@ export default class PhotoUpload extends Component {
     };
 
     handleImageChange(e) {
-        const file = e.target.files[0];
-        const cropPhoto = URL.createObjectURL(file)
-        this.setState({
-            selectedFile: file,
-            selectedFileThumb: cropPhoto,
-            showUploadButton: true
-        });
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            const cropPhoto = URL.createObjectURL(file);
+            this.setState({
+                selectedFile: file,
+                selectedFileThumb: cropPhoto,
+                showUploadButton: true
+            });
+        } else {
+             console.error("No files selected.");
+             this.setState({
+                 selectedFile: null,
+                 selectedFileThumb: null,
+                 showUploadButton: false
+             });
+        }
     }
 
     handleIconClick() {
@@ -54,13 +64,15 @@ export default class PhotoUpload extends Component {
                 processData: false,
                 contentType: false,
                 data: formData,
-                success: function () {
+                success: function (res) {
+                    if (res.success) {
                         this.setState({
                             showUploadButton: false,
                         });
                         TalentUtil.notification.show("ProfilePhoto updated successfully", "success", null, null);
-                    
+                    }
                 }.bind(this),
+            
                 error: function (xhr, status, error) {
                     console.error(status, error);
                     TalentUtil.notification.show("ProfilePhoto did not update successfully", "error", null, null);
@@ -75,7 +87,7 @@ export default class PhotoUpload extends Component {
         const { selectedFile, selectedFileThumb } = this.state;
         const profileImage = selectedFile ? selectedFileThumb : this.props.imageId.profilePhotoUrl;
 
-        if (this.props.imageId.profilePhotoUrl) {
+        if (selectedFileThumb || this.props.imageId.profilePhotoUrl) {
             return (
                 <div style={{ textAlign: 'center' }}>
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Hosting;
@@ -44,7 +45,7 @@ namespace Talent.Common.Services
 
         public async Task<string> SaveFile(IFormFile file, FileType type)
         {
-            if (file == null || file.Length == 0)
+            if (file == null || file.Length == 0 || !file.ContentType.StartsWith("image/"))
             {
                 throw new ArgumentException("Invalid file.");
             }
@@ -77,9 +78,14 @@ namespace Talent.Common.Services
         {
             try
             {
-                string objectKey = id;
-                bool deletionSuccess = await _awsService.RemoveFileFromS3(objectKey, _bucketName);
-                return deletionSuccess;
+                if (!string.IsNullOrEmpty(id))
+                {
+                    string objectKey = id;
+                    bool deletionSuccess = await _awsService.RemoveFileFromS3(objectKey, _bucketName);
+                    return deletionSuccess;
+                }
+                return false;
+              
             }
             catch (Exception ex)
             {

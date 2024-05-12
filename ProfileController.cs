@@ -21,6 +21,7 @@ using Talent.Services.Profile.Domain.Contracts;
 using Talent.Common.Aws;
 using Talent.Services.Profile.Models;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Talent.Services.Profile.Controllers
 {
@@ -144,15 +145,23 @@ namespace Talent.Services.Profile.Controllers
 
         [HttpPost("addLanguage")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
-        public async Task<AddLanguageViewModel> AddLanguage([FromBody] AddLanguageViewModel language)
+        public async Task<IActionResult> AddLanguage([FromBody] AddLanguageViewModel language)
         {
             try
             {
-                return (await _profileService.AddNewLanguage(language, _userAppContext.CurrentUserId));
+                var newLanguage = await _profileService.AddNewLanguage(language, _userAppContext.CurrentUserId);
+                if (newLanguage != null)
+                {
+                    return Json(new { Success = true, language });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return null;
+                return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
 
@@ -160,24 +169,52 @@ namespace Talent.Services.Profile.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<ActionResult> UpdateLanguage([FromBody] AddLanguageViewModel language, string id)
         {
-            var updateLanguage = await _profileService.EditLanguage(language, id, _userAppContext.CurrentUserId);
-            if (updateLanguage == null)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("ID is required.");
+                }
+
+                if (await _profileService.EditLanguage(language, id, _userAppContext.CurrentUserId))
+                {
+                    return Json(new { Success = true });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            return Ok(updateLanguage);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+           
         }
 
         [HttpDelete("deleteLanguage")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<IActionResult> DeleteLanguage(string id)
         {
-            var deleteLanguage = await _profileService.DeleteLanguage(id, _userAppContext.CurrentUserId);
-            if (deleteLanguage == false)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("ID is required.");
+                }
+                if (await _profileService.DeleteLanguage(id, _userAppContext.CurrentUserId))
+                {
+                    return Json(new { Success = true });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            return Ok(deleteLanguage);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
 
@@ -191,53 +228,97 @@ namespace Talent.Services.Profile.Controllers
 
         [HttpPost("addSkill")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
-        public async Task<AddSkillViewModel> AddSkill([FromBody]AddSkillViewModel skill)
+        public async Task<IActionResult> AddSkill([FromBody]AddSkillViewModel skill)
         {
             try
             {
-                return (await _profileService.AddNewSkill(skill, _userAppContext.CurrentUserId));
+                var newSkill = await _profileService.AddNewSkill(skill, _userAppContext.CurrentUserId);
+                if (newSkill != null)
+                {
+                    return Json(new { Success = true, skill });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return null;
+                return StatusCode(500, $"An error occurred: {ex.Message}");
             }
+
         }
 
         [HttpPost("updateSkill")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<IActionResult> UpdateSkill([FromBody]AddSkillViewModel skill, string id)
         {
-            var updateskill = await _profileService.EditSkill(skill, id, _userAppContext.CurrentUserId);
-            if (updateskill == null)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("ID is required.");
+                }
+                if (await _profileService.EditSkill(skill, id, _userAppContext.CurrentUserId))
+                {
+                    return Json(new { Success = true });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            return Ok(updateskill);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+
         }
 
         [HttpDelete("deleteSkill")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<IActionResult> DeleteSkill(string id)
         {
-            var deleteSkill = await _profileService.DeleteSkill(id, _userAppContext.CurrentUserId);
-            if (deleteSkill == false)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("ID is required.");
+                }
+                if (await _profileService.DeleteSkill(id, _userAppContext.CurrentUserId))
+                {
+                    return Json(new { Success = true });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            return Ok(deleteSkill);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         [HttpPost("addExperience")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
-        public async Task<ExperienceViewModel> AddExperience([FromBody] ExperienceViewModel experience)
+        public async Task<IActionResult> AddExperience([FromBody] ExperienceViewModel experience)
         {
             try
             {
-                return (await _profileService.AddNewExperience(experience, _userAppContext.CurrentUserId));
+                var newExperience = await _profileService.AddNewExperience(experience, _userAppContext.CurrentUserId);
+                if (newExperience != null)
+                {
+                    return Json(new { Success = true, experience });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return null;
+                return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
 
@@ -245,24 +326,50 @@ namespace Talent.Services.Profile.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<IActionResult> UpdateExperience([FromBody] ExperienceViewModel experience, string id)
         {
-            var updateexperience = await _profileService.EditExperience(experience, id, _userAppContext.CurrentUserId);
-            if (updateexperience == null)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("ID is required.");
+                }
+                if (await _profileService.EditExperience(experience, id, _userAppContext.CurrentUserId))
+                {
+                    return Json(new { Success = true });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            return Ok(updateexperience);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         [HttpDelete("deleteExperience")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "talent")]
         public async Task<IActionResult> DeleteExperience(string id)
         {
-            var deleteExperience = await _profileService.DeleteExperience(id, _userAppContext.CurrentUserId);
-            if (deleteExperience == false)
+            try
             {
-                return NotFound();
+                if (string.IsNullOrEmpty(id))
+                {
+                    return BadRequest("ID is required.");
+                }
+                if (await _profileService.DeleteExperience(id, _userAppContext.CurrentUserId))
+                {
+                    return Json(new { Success = true });
+                }
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
-            return Ok(deleteExperience);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
 
@@ -321,14 +428,14 @@ namespace Talent.Services.Profile.Controllers
                     return BadRequest("Invalid file or talent ID.");
                 }
 
-                var success = await _profileService.UpdateTalentPhoto(talentId, file);
-
-                if (success)
+                if(await _profileService.UpdateTalentPhoto(talentId, file))
                 {
-                    return Ok("Profile photo updated successfully.");
+                    return Json(new { Success = true });
                 }
-
-                return BadRequest("Failed to update profile photo.");
+                else
+                {
+                    return Json(new { Success = false });
+                }
             }
             catch (Exception ex)
             {

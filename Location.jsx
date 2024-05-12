@@ -18,44 +18,40 @@ export class Address extends React.Component {
             newAddress: addressDetails
         }
        
-        this.openEdit = this.openEdit.bind(this)
-        this.closeEdit = this.closeEdit.bind(this)
-        this.handleChange = this.handleChange.bind(this)
-        this.saveAddress = this.saveAddress.bind(this)
-        this.renderEdit = this.renderEdit.bind(this)
-        this.renderDisplay = this.renderDisplay.bind(this)
+        this.openEdit = this.openEdit.bind(this);
+        this.closeEdit = this.closeEdit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.saveAddress = this.saveAddress.bind(this);
+        this.renderEdit = this.renderEdit.bind(this);
+        this.renderDisplay = this.renderDisplay.bind(this);
     }
 
     openEdit(){
-        const addressDetails = Object.assign({}, this.props.addressDetails)
+        const addressDetails = Object.assign({}, this.props.addressDetails);
         this.setState({
             showEditSection: true,
             newAddress: addressDetails
-        })
+        });
     }
 
     closeEdit(){
         this.setState({
             showEditSection: false
-        })
+        });
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newAddress)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newAddress);
+        data[event.target.name] = event.target.value;
         this.setState({
             newAddress: data
-        })
+        });
     }
 
     saveAddress() {
-        const data = Object.assign({}, this.state.newAddress)
-        this.props.controlFunc(this.props.componentId, { address: data })
-        this.closeEdit()
-    }
-
-    componentDidMount() {
-
+        const data = Object.assign({}, this.state.newAddress);
+        this.props.controlFunc(this.props.componentId, { address: data });
+        this.closeEdit();
     }
 
     render() {
@@ -163,7 +159,7 @@ export class Nationality extends React.Component {
     constructor(props) {
         super(props)
 
-        const nationalityDetails = props.nationalityDetails ?
+       const nationalityDetails = props.nationalityDetails ?
             Object.assign({}, props.nationalityDetails)
             : {
 
@@ -173,20 +169,16 @@ export class Nationality extends React.Component {
             newNationality: nationalityDetails
         }
 
-        this.handleChange = this.handleChange.bind(this)
+        this.handleChange = this.handleChange.bind(this);
     }
 
     handleChange(event) {
-        const data = Object.assign({}, this.state.newNationality)
-        data[event.target.name] = event.target.value
+        const data = Object.assign({}, this.state.newNationality);
+        data[event.target.name] = event.target.value;
         this.setState({
             newNationality: data
-        })
-        this.props.controlFunc(this.props.componentId, data )
-    }
-
-    componentDidMount() {
-
+        });
+        this.props.controlFunc(this.props.componentId, data);
     }
     
     render() {
