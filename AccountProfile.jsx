@@ -49,12 +49,12 @@ export default class AccountProfile extends React.Component {
 
         }
 
-        this.updateWithoutSave = this.updateWithoutSave.bind(this)
-        this.updateAndSaveData = this.updateAndSaveData.bind(this)
-        this.updateForComponentId = this.updateForComponentId.bind(this)
+        this.updateWithoutSave = this.updateWithoutSave.bind(this);
+        this.updateAndSaveData = this.updateAndSaveData.bind(this);
+        this.updateForComponentId = this.updateForComponentId.bind(this);
         this.handleUserInput = this.handleUserInput.bind(this);
-        this.saveProfile = this.saveProfile.bind(this)
-        this.loadData = this.loadData.bind(this)
+        this.saveProfile = this.saveProfile.bind(this);
+        this.loadData = this.loadData.bind(this);
         this.init = this.init.bind(this);
     };
 
@@ -62,7 +62,7 @@ export default class AccountProfile extends React.Component {
         let loaderData = this.state.loaderData;
         loaderData.allowedUsers.push("Talent");
         loaderData.isLoading = false;
-        this.setState({ loaderData })
+        this.setState({ loaderData });
     }
 
     componentDidMount() {
@@ -104,12 +104,12 @@ export default class AccountProfile extends React.Component {
         let newProfile = Object.assign({}, this.state.profileData, newValues);
         this.setState({
             profileData: newProfile
-        })
+        });
     }
 
     //updates component's state and saves data
     updateAndSaveData(newValues) {
-        let newProfile = Object.assign({}, this.state.profileData, newValues)
+        let newProfile = Object.assign({}, this.state.profileData, newValues);
         this.setState({
             profileData: newProfile
         }, this.saveProfile)
@@ -128,7 +128,7 @@ export default class AccountProfile extends React.Component {
     updateForComponentId(componentId, newValues) {
         let data = {};
         data[componentId] = newValues;
-        this.updateAndSaveData(newValues)
+        this.updateAndSaveData(newValues);
     }
 
     saveProfile() {
