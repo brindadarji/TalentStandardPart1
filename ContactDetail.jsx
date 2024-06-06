@@ -2,6 +2,7 @@
 import Cookies from 'js-cookie';
 import { ChildSingleInput } from '../Form/SingleInput.jsx';
 import { Location } from '../Employer/CreateJob/Location.jsx';
+import { validateRequiredFields } from '../Form/validation.jsx';
 export class IndividualDetailSection extends Component {
     constructor(props) {
         super(props)
@@ -52,9 +53,17 @@ export class IndividualDetailSection extends Component {
 
     saveContact() {
         const { firstName, lastName, email } = this.state.newContact;
-        
-        if (!firstName || !lastName || !email) {
-            TalentUtil.notification.show("Please enter user details", "error", null, null);
+        const requiredFields = {
+            "First Name": firstName,
+            "Last Name": lastName,
+            "Email": email,
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else { 
             const data = Object.assign({}, this.state.newContact);

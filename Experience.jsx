@@ -3,6 +3,8 @@ import React from 'react';
 import Cookies from 'js-cookie';
 import { Icon } from 'semantic-ui-react'
 import { ChildSingleInput } from '../Form/SingleInput.jsx';
+import { validateRequiredFields } from '../Form/validation.jsx';
+
 export default class Experience extends React.Component {
     constructor(props) {
         super(props);
@@ -16,10 +18,12 @@ export default class Experience extends React.Component {
         this.state = {
             showAddSection: false,
             showEditSection: false,
-            newExperience: [],
+            addExperience: { company: '', position: '', start: '', end: '', responsibilities: '' },
+            editExperience: { id: '', company: '', position: '', start: '', end: '', responsibilities: '' },
         }
 
-        this.handleChange = this.handleChange.bind(this);
+        this.handleAddChange = this.handleAddChange.bind(this);
+        this.handleEditChange = this.handleEditChange.bind(this);
         this.renderAddExp = this.renderAddExp.bind(this);
         this.closeAdd = this.closeAdd.bind(this);
         this.openAdd = this.openAdd.bind(this);
@@ -30,7 +34,7 @@ export default class Experience extends React.Component {
     };
 
     closeAdd() {
-        this.setState({ showAddSection: false });
+        this.setState({ showAddSection: false, addExperience: { company: '', position: '', start: '', end: '', responsibilities: '' } });
     }
 
     openAdd() {
@@ -40,62 +44,91 @@ export default class Experience extends React.Component {
     }
 
     openEdit(selectedExpID) {
+        if (!selectedExpID) {
+            TalentUtil.notification.show("Please select an experience to edit", "error", null, null);
+            return;
+        }
         const experienceData = Object.assign([], this.props.experienceData);
         const selectedExperience = experienceData.find(exp => exp.id === selectedExpID);
-        this.setState({ showEditSection: true, newExperience: selectedExperience });
+        this.setState({ showEditSection: true, editExperience: selectedExperience });
     }
 
     closeEdit() {
-        this.setState({ showEditSection: false, newExperience: [] });
+        this.setState({ showEditSection: false, editLanguage: { company: '', position: '', start: '', end: '', responsibilities: '' } });
     }
 
-    handleChange(event) {
-        const data = Object.assign({}, this.state.newExperience);
+    handleAddChange(event) {
+        const data = Object.assign({}, this.state.addExperience);
         data[event.target.name] = event.target.value;
         this.setState({
-            newExperience: data
+            addExperience: data
+        });
+    }
+
+    handleEditChange(event) {
+        const data = Object.assign({}, this.state.editExperience);
+        data[event.target.name] = event.target.value;
+        this.setState({
+            editExperience: data
         });
     }
 
     handleExperienceSave() {
         const data = Object.assign([], this.props.experienceData);
-        data.push(this.state.newExperience);
+        data.push(this.state.addExperience);
         this.props.controlFunc(this.props.componentId, { experience: data });
         this.closeAdd();
         this.setState({
-            newExperience: []
+            addExperience: []
         });
     }
 
     handleExperienceDelete(selectedExpID) {
+        if (!selectedExpID) {
+            TalentUtil.notification.show("Please select an experience to delete", "error", null, null);
+            return;
+        }
         const data = Object.assign([], this.props.experienceData);
         const deletedData = data.filter(experience => experience.id !== selectedExpID);
         this.props.controlFunc(this.props.componentId, { experience: deletedData });
-        this.setState({
-            newExperience: []
-        });
     }
 
     handleExperienceEdit(selectedExpID) {
+        if (!selectedExpID) {
+            TalentUtil.notification.show("Please select an experience to edit", "error", null, null);
+            return;
+        }
         let data = Object.assign([], this.props.experienceData);
         const expToUpdate = data.findIndex(item => item.id === selectedExpID);
         const updatedArray = [
             ...data.slice(0, expToUpdate),
-            this.state.newExperience,
+            this.state.editExperience,
             ...data.slice(expToUpdate + 1)
         ];
         data = updatedArray;
         this.props.controlFunc(this.props.componentId, { experience : data });
         this.closeEdit();
         this.setState({
-            newExperience: []
+            editExperience: []
         });
     }
 
     saveExperience() {
-        const { company, position, start, end, responsibilities } = this.state.newExperience;
-        if (!company || !position || !start || !end || !responsibilities) {
-            TalentUtil.notification.show("Please enter experience details", "error", null, null);
+        const { company, position, start, end, responsibilities } = this.state.addExperience;
+       
+        const requiredFields = {
+            "Company": company,
+            "Position": position,
+            "Start Date": start,
+            "End Date": end,
+            "Responsibilities": responsibilities,
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else {
             const experienceToSave = {
@@ -120,25 +153,23 @@ export default class Experience extends React.Component {
                     success: function (res) {
                         if (res.success) {
                             this.setState({
-                                newExperience: {
-                                    company: this.state.newExperience.company,
-                                    position: this.state.newExperience.position,
-                                    start: this.state.newExperience.start,
-                                    end: this.state.newExperience.end,
-                                    responsibilities: this.state.newExperience.responsibilities,
+                                addExperience: {
+                                    company: this.state.addExperience.company,
+                                    position: this.state.addExperience.position,
+                                    start: this.state.addExperience.start,
+                                    end: this.state.addExperience.end,
+                                    responsibilities: this.state.addExperience.responsibilities,
                                     id: res.experience.id
                                 }
                             });
                             this.handleExperienceSave();
                         }
                         else {
-                            console.log(res);
+                            TalentUtil.notification.show("Experience did not add successfully", "error", null, null);
                         }
                     }.bind(this),
-                    error: function (res, a, b) {
-                        console.log(res);
-                        console.log(a);
-                        console.log(b);
+                    error: function (res) {
+                        console.error('Error:', res.status);
                     }
                 })
             }
@@ -149,9 +180,24 @@ export default class Experience extends React.Component {
     }
 
     editExperience(selectedExpID) {
-        const { company, position, start, end, responsibilities } = this.state.newExperience;
-        if (!company || !position || !start || !end || !responsibilities) {
-            TalentUtil.notification.show("Please enter experience details", "error", null, null);
+        if (!selectedExpID) {
+            TalentUtil.notification.show("Please select an experience to edit", "error", null, null);
+            return;
+        }
+        const { company, position, start, end, responsibilities } = this.state.editExperience;
+        const requiredFields = {
+            "Company": company,
+            "Position": position,
+            "Start Date": start,
+            "End Date": end,
+            "Responsibilities": responsibilities,
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else {
             const experienceToEdit = {
@@ -177,14 +223,12 @@ export default class Experience extends React.Component {
                             this.handleExperienceEdit(selectedExpID);
                         }
                         else {
-                            console.log(res);
+                            TalentUtil.notification.show("Experience did not edit successfully", "error", null, null);
                         }
 
                     }.bind(this),
-                    error: function (res, a, b) {
-                        console.log(res);
-                        console.log(a);
-                        console.log(b);
+                    error: function (res) {
+                        console.error('Error:', res.status);
                     }
                 })
             }
@@ -195,6 +239,10 @@ export default class Experience extends React.Component {
     }
 
     deleteExperience(selectedExpID) {
+        if (!selectedExpID) {
+            TalentUtil.notification.show("Please select an experience to delete", "error", null, null);
+            return;
+        }
         let cookies = Cookies.get('talentAuthToken');
         try {
             $.ajax({
@@ -211,15 +259,12 @@ export default class Experience extends React.Component {
                         this.handleExperienceDelete(selectedExpID);
                         TalentUtil.notification.show("Experience deleted sucessfully", "success", null, null);
                     } else {
-                        console.log(res);
                         TalentUtil.notification.show("Experience did not delete successfully", "error", null, null);
                     }
 
                 }.bind(this),
-                error: function (res, a, b) {
-                    console.log(res)
-                    console.log(a)
-                    console.log(b)
+                error: function (res) {
+                    console.error('Error:', res.status);
                 }
             })
         }
@@ -282,7 +327,7 @@ export default class Experience extends React.Component {
         const experience = Array.isArray(this.props.experienceData) ? this.props.experienceData : [];
         return (
             experience.map((exp) => (
-                this.state.showEditSection && this.state.newExperience.id === exp.id
+                this.state.showEditSection && this.state.editExperience.id === exp.id
                     ? this.renderEdit(exp)
                     : this.renderTableRow(exp)
             ))
@@ -322,7 +367,7 @@ export default class Experience extends React.Component {
                             inputType="text"
                             name="company"
                             label="Company:"
-                            controlFunc={this.handleChange}
+                            controlFunc={this.handleAddChange}
                             maxLength={80}
                             placeholder="Add Company"
                             errorMessage="Please enter a valid company"
@@ -333,7 +378,7 @@ export default class Experience extends React.Component {
                                 inputType="text"
                                 name="position"
                                 label="Position:"
-                                controlFunc={this.handleChange}
+                                controlFunc={this.handleAddChange}
                                 maxLength={80}
                                 placeholder="Add Position"
                                 errorMessage="Please enter a valid position"
@@ -347,7 +392,7 @@ export default class Experience extends React.Component {
                             inputType="date"
                             name="start"
                             label="Start Date:"
-                            controlFunc={this.handleChange}
+                            controlFunc={this.handleAddChange}
                             maxLength={80}
                             placeholder="Add start date"
                             errorMessage="Please enter a valid start date"
@@ -358,7 +403,7 @@ export default class Experience extends React.Component {
                             inputType="date"
                             name="end"
                             label="End Date:"
-                            controlFunc={this.handleChange}
+                            controlFunc={this.handleAddChange}
                             maxLength={80}
                             placeholder="Add end date"
                             errorMessage="Please enter a valid end date"
@@ -372,7 +417,7 @@ export default class Experience extends React.Component {
                             inputType="text"
                             name="responsibilities"
                             label="Responsibilities:"
-                            controlFunc={this.handleChange}
+                            controlFunc={this.handleAddChange}
                             maxLength={80}
                             placeholder="Add Responsibilities"
                             errorMessage="Please enter a valid responsibilities"
@@ -394,12 +439,12 @@ export default class Experience extends React.Component {
         let startDate = '';
         let endDate = '';
 
-        if (this.state.newExperience.start && this.state.newExperience.start.length > 0) {
-            startDate = this.state.newExperience.start.split('T')[0];
+        if (this.state.editExperience.start && this.state.editExperience.start.length > 0) {
+            startDate = this.state.editExperience.start.split('T')[0];
         }
 
-        if (this.state.newExperience.end && this.state.newExperience.end.length > 0) {
-            endDate = this.state.newExperience.end.split('T')[0];
+        if (this.state.editExperience.end && this.state.editExperience.end.length > 0) {
+            endDate = this.state.editExperience.end.split('T')[0];
         }
 
         return (
@@ -412,8 +457,8 @@ export default class Experience extends React.Component {
                                 inputType="text"
                                 name="company"
                                 label="Company"
-                                value={this.state.newExperience.company}
-                                controlFunc={this.handleChange}
+                                value={this.state.editExperience.company}
+                                controlFunc={this.handleEditChange}
                                 maxLength={80}
                                 placeholder="Edit Language"
                                 errorMessage="Please enter a valid Language"
@@ -424,8 +469,8 @@ export default class Experience extends React.Component {
                             inputType="text"
                             name="position"
                             label="Position"
-                            value={this.state.newExperience.position}
-                            controlFunc={this.handleChange}
+                            value={this.state.editExperience.position}
+                            controlFunc={this.handleEditChange}
                             maxLength={80}
                             placeholder="Edit Language"
                             errorMessage="Please enter a valid Language"
@@ -439,7 +484,7 @@ export default class Experience extends React.Component {
                                 name="start"
                                 label="Start date:"
                                 value={startDate}
-                                controlFunc={this.handleChange}
+                                controlFunc={this.handleEditChange}
                                 maxLength={80}
                                 placeholder="Edit Language"
                                 errorMessage="Please enter a valid Language"
@@ -451,7 +496,7 @@ export default class Experience extends React.Component {
                                 name="end"
                                 label="End date:"
                                 value={endDate}
-                                controlFunc={this.handleChange}
+                                controlFunc={this.handleEditChange}
                                 maxLength={80}
                                 placeholder="Edit Language"
                                 errorMessage="Please enter a valid Language"
@@ -465,8 +510,8 @@ export default class Experience extends React.Component {
                     inputType="text"
                     name="responsibilities"
                     label="Responsibilities:"
-                    value={this.state.newExperience.responsibilities}
-                    controlFunc={this.handleChange}
+                    value={this.state.editExperience.responsibilities}
+                    controlFunc={this.handleEditChange}
                     maxLength={80}
                     placeholder="Edit Language"
                     errorMessage="Please enter a valid Language"

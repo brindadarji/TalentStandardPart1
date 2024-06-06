@@ -49,7 +49,7 @@ namespace Talent.Services.Profile.Domain.Services
             _fileService = fileService;
         }
 
-        public async Task<AddSkillViewModel> AddNewSkill(AddSkillViewModel skill, string currentUserId)
+        public async Task<AddSkillViewModel> AddNewSkillAsync(AddSkillViewModel skill, string currentUserId)
         {
             try
             {
@@ -83,7 +83,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<bool> DeleteSkill(string id, string currentUserId)
+        public async Task<bool> DeleteSkillAsync(string id, string currentUserId)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<bool> EditSkill(AddSkillViewModel skill, string id, string currentUserId)
+        public async Task<bool> EditSkillAsync(AddSkillViewModel skill, string id, string currentUserId)
         {
             try
             {
@@ -133,7 +133,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<ExperienceViewModel> AddNewExperience(ExperienceViewModel experience, string currentUserId)
+        public async Task<ExperienceViewModel> AddNewExperienceAsync(ExperienceViewModel experience, string currentUserId)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace Talent.Services.Profile.Domain.Services
             }   
         }
 
-        public async Task<bool> DeleteExperience(string id, string currentUserId)
+        public async Task<bool> DeleteExperienceAsync(string id, string currentUserId)
         {
             try
             {
@@ -192,7 +192,7 @@ namespace Talent.Services.Profile.Domain.Services
 
         }
 
-        public async Task<bool> EditExperience(ExperienceViewModel experience, string id, string currentUserId)
+        public async Task<bool> EditExperienceAsync(ExperienceViewModel experience, string id, string currentUserId)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<AddLanguageViewModel> AddNewLanguage(AddLanguageViewModel language, string currentUserId)
+        public async Task<AddLanguageViewModel> AddNewLanguageAsync(AddLanguageViewModel language, string currentUserId)
         {
             try
             {
@@ -249,7 +249,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<bool> DeleteLanguage(string id, string currentUserId)
+        public async Task<bool> DeleteLanguageAsync(string id, string currentUserId)
         {
             try
             {
@@ -274,7 +274,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<bool> EditLanguage(AddLanguageViewModel language, string id, string currentUserId)
+        public async Task<bool> EditLanguageAsync(AddLanguageViewModel language, string id, string currentUserId)
         {
             try
             {
@@ -299,7 +299,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<TalentProfileViewModel> GetTalentProfile(string Id)
+        public async Task<TalentProfileViewModel> GetTalentProfileAsync(string Id)
         {
             try
             {
@@ -346,7 +346,7 @@ namespace Talent.Services.Profile.Domain.Services
             }
         }
 
-        public async Task<bool> UpdateTalentProfile(TalentProfileViewModel model, string updaterId)
+        public async Task<bool> UpdateTalentProfileAsync(TalentProfileViewModel model, string updaterId)
         {
             try
             {
@@ -548,7 +548,7 @@ namespace Talent.Services.Profile.Domain.Services
             throw new NotImplementedException();
         }
 
-        public async Task<bool> UpdateTalentPhoto(string talentId, IFormFile file)
+        public async Task<bool> UpdateTalentPhotoAsync(string talentId, IFormFile file)
         {
             try
             {
@@ -620,7 +620,7 @@ namespace Talent.Services.Profile.Domain.Services
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<TalentSnapshotViewModel>> GetTalentSnapshotList(string employerOrJobId, bool forJob, int position, int increment)
+        public async Task<IEnumerable<TalentSnapshotViewModel>> GetTalentSnapshotListAsync(string employerOrJobId, bool forJob, int position, int increment)
         {
             try
             {

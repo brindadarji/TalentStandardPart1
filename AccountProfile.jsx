@@ -83,13 +83,12 @@ export default class AccountProfile extends React.Component {
                 success: function (res) {
                     let profileData = null;
                     if (res.success) {
-                        profileData = res.data
-                        console.log("profileData", profileData)
+                        profileData = res.data;
                     }
                     this.updateWithoutSave(profileData);
                 }.bind(this),
                 error: function (res) {
-                    console.log(res.status)
+                    console.error('Error:', res.status);
                 }
             })
             this.init()
@@ -144,7 +143,6 @@ export default class AccountProfile extends React.Component {
                 data: JSON.stringify(this.state.profileData),
 
                 success: function (res) {
-                    console.log(res)
                     if (res.success) {
                         TalentUtil.notification.show("Profile updated sucessfully", "success", null, null)
                     } else {
@@ -152,10 +150,8 @@ export default class AccountProfile extends React.Component {
                     }
 
                 }.bind(this),
-                error: function (res, a, b) {
-                    console.log(res)
-                    console.log(a)
-                    console.log(b)
+                error: function (res) {
+                    console.error('Error:', res.status);
                 }
             })
         }

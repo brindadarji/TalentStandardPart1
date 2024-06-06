@@ -3,6 +3,7 @@ import React from 'react';
 import Cookies from 'js-cookie';
 import { Icon } from 'semantic-ui-react'
 import { ChildSingleInput,SingleInput } from '../Form/SingleInput.jsx';
+import { validateRequiredFields } from '../Form/validation.jsx';
 
 export default class Language extends React.Component {
     constructor(props) {
@@ -17,14 +18,12 @@ export default class Language extends React.Component {
         this.state = {
             showAddSection: false,
             showEditSection: false,
-            newLanguage: [],
-            validationErrors: {
-                name: '',
-                level:'',
-            },
+            addLanguage: { name: '', level: '' },
+            editLanguage: { id: '', name: '', level: '' },
         }
 
-        this.handleChange = this.handleChange.bind(this);
+        this.handleAddChange = this.handleAddChange.bind(this);
+        this.handleEditChange = this.handleEditChange.bind(this);
         this.renderAdd = this.renderAdd.bind(this);
         this.closeAdd = this.closeAdd.bind(this);
         this.openAdd = this.openAdd.bind(this);
@@ -36,85 +35,103 @@ export default class Language extends React.Component {
     }
 
     closeAdd() {
-        this.setState({ showAddSection: false });
+        this.setState({ showAddSection: false, addLanguage: { name: '', level: '' } });
     }
 
     openAdd() {
         this.setState({
             showAddSection: true,
-        })
+        });
     }
 
     openEdit(selectedLangId) {
+        if (!selectedLangId) {
+            TalentUtil.notification.show("Please select language to edit", "error", null, null);
+            return;
+        }
         const languageData = Object.assign([], this.props.languageData);
         const selectedLanguage = languageData.find(lang => lang.id === selectedLangId);
-        this.setState({ showEditSection: true, newLanguage: selectedLanguage })
+        this.setState({ showEditSection: true, editLanguage: selectedLanguage});
     }
 
     closeEdit() {
-        this.setState({ showEditSection: false, newLanguage: [] });
+        this.setState({ showEditSection: false, editLanguage: { id: '', name: '', level: '' } });
     }
 
-    handleChange(event) {
+    handleAddChange(event) {
         const { name, value } = event.target;
-        const data = Object.assign({}, this.state.newLanguage);
+        const data = Object.assign({}, this.state.addLanguage);
         data[name] = value;
-
-        let errorMessage = '';
-        if (name === 'name' && value.trim() === '') {
-            errorMessage = 'Please enter Language';
-        }else if (name === 'level' && value.trim() === '') {
-            errorMessage = 'Please select Language Level';
-        }
-
-        const newValidationErrors = Object.assign({}, this.state.validationErrors);
-        newValidationErrors[name] = errorMessage;
-
         this.setState({
-            newLanguage: data,
-            validationErrors: newValidationErrors,
+            addLanguage: data,
+        });
+    }
+
+    handleEditChange(event) {
+        const { name, value } = event.target;
+        const data = Object.assign({}, this.state.editLanguage);
+        data[name] = value;
+        this.setState({
+            editLanguage: data,
         });
     }
 
     handleLanguageDelete(selectedLangId) {
+        if (!selectedLangId) {
+            TalentUtil.notification.show("Please select language to delete", "error", null, null);
+            return;
+        }
         const data = Object.assign([], this.props.languageData);
         const deletedData = data.filter(lang => lang.id !== selectedLangId);
         this.props.controlFunc(this.props.componentId, { languages: deletedData });
-        this.setState({
-            newLanguage: []
-        });
     }
 
     handleLanguageSave() {
         const data = Object.assign([], this.props.languageData);
-        data.push(this.state.newLanguage);
+        data.push(this.state.addLanguage);
         this.props.controlFunc(this.props.componentId, { languages: data });
         this.closeAdd();
         this.setState({
-            newLanguage: []
+            addLanguage: []
         });
     }
 
     handleLanguageEdit(selectedLangId) {
+        if (!selectedLangId) {
+            TalentUtil.notification.show("Please select language to edit", "error", null, null);
+            return;
+        }
         let data = Object.assign([], this.props.languageData);
         const langToUpdate = data.findIndex(item => item.id === selectedLangId);
         const updatedArray = [
             ...data.slice(0, langToUpdate),
-            this.state.newLanguage,
+            this.state.editLanguage,
             ...data.slice(langToUpdate + 1)
         ];
         data = updatedArray;
         this.props.controlFunc(this.props.componentId, { languages: data });
         this.closeEdit();
         this.setState({
-            newLanguage: []
+            editLanguage: []
         });
     }
 
     editLanguage(selectedLangId) {
-        const { name, level } = this.state.newLanguage;
-        if (!name || !level) {
-            TalentUtil.notification.show("Please enter language and level", "error", null, null)
+        if (!selectedLangId) {
+            TalentUtil.notification.show("Please select language to edit", "error", null, null);
+            return;
+        }
+        const { name, level } = this.state.editLanguage;
+        const requiredFields = {
+            "Language Name": name,
+            "Language Level": level
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else {
             const languagesToedit = {
@@ -137,14 +154,12 @@ export default class Language extends React.Component {
                             this.handleLanguageEdit(selectedLangId);
                         }
                         else {
-                            console.log(res);
+                            TalentUtil.notification.show("Language did not update successfully", "error", null, null);
                         }
 
                     }.bind(this),
-                    error: function (res, a, b) {
-                        console.log(res);
-                        console.log(a);
-                        console.log(b);
+                    error: function (res) {
+                        console.error('Error:', res.status);
                     }
                 })
             }
@@ -155,9 +170,17 @@ export default class Language extends React.Component {
     }
 
     saveLanguage() {
-        const { name, level } = this.state.newLanguage;
-        if (!name || !level) {
-            TalentUtil.notification.show("Please enter language and level", "error", null, null);
+        const { name, level } = this.state.addLanguage;
+        const requiredFields = {
+            "Language Name": name,
+            "Language Level": level
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else {
             const languagesToSave = {
@@ -179,22 +202,20 @@ export default class Language extends React.Component {
                     success: function (res) {
                         if (res.success) {
                             this.setState({
-                                newLanguage: {
-                                    name: this.state.newLanguage.name,
-                                    level: this.state.newLanguage.level,
+                                addLanguage: {
+                                    name: this.state.addLanguage.name,
+                                    level: this.state.addLanguage.level,
                                     id: res.language.id
                                 }
                             });
                             this.handleLanguageSave();
                         }
                         else {
-                            console.log(res);
+                            TalentUtil.notification.show("Language did not save successfully", "error", null, null);
                         }
                     }.bind(this),
-                    error: function (res, a, b) {
-                        console.log(res);
-                        console.log(a);
-                        console.log(b);
+                    error: function (res) {
+                        console.error('Error:', res.status);
                     }
                 })
             }
@@ -205,6 +226,10 @@ export default class Language extends React.Component {
     }
 
     deleteLanguage(selectedLangId) {
+        if (!selectedLangId) {
+            TalentUtil.notification.show("Please select language to delete", "error", null, null);
+            return;
+        }
         let cookies = Cookies.get('talentAuthToken');
         try {
             $.ajax({
@@ -225,10 +250,8 @@ export default class Language extends React.Component {
                     }
 
                 }.bind(this),
-                error: function (res, a, b) {
-                    console.log(res);
-                    console.log(a);
-                    console.log(b);
+                error: function (res) {
+                    console.error('Error:', res.status);
                 }
             })
         }
@@ -268,7 +291,7 @@ export default class Language extends React.Component {
         const languages = Array.isArray(this.props.languageData) ? this.props.languageData : [];
         return (
                 languages.map((language) => (
-                    this.state.showEditSection && this.state.newLanguage.id === language.id
+                    this.state.showEditSection && this.state.editLanguage.id === language.id
                         ? this.renderEdit(language)
                         : this.renderTableRow(language)
                 ))
@@ -306,21 +329,16 @@ export default class Language extends React.Component {
                             inputType="text"
                             name="name"
                             label=""
-                            controlFunc={this.handleChange}
+                            controlFunc={this.handleAddChange}
                             maxLength={80}
                             placeholder="Add Language"
                         />
-                        {this.state.validationErrors.name && (
-                            <div className="ui pointing red basic label">
-                                {this.state.validationErrors.name}
-                            </div>
-                        )}
                     </div>
                     <div className='four wide field'>
                         <div className='field'>
                             <label></label>
                             <select
-                                onChange={this.handleChange}
+                                onChange={this.handleAddChange}
                                 name="level"
                             >
                                 <option value="">Language Level</option>
@@ -330,11 +348,6 @@ export default class Language extends React.Component {
                                 <option value="Native/Bilingual">Native/Bilingual</option>
                             </select>
                         </div>
-                        {this.state.validationErrors.level && (
-                            <div className="ui pointing red basic label">
-                                {this.state.validationErrors.level}
-                            </div>
-                        )}
                     </div>
                     <div className='six wide field'>
                         <div className='field'>
@@ -356,8 +369,8 @@ export default class Language extends React.Component {
                         inputType="text"
                         name="name"
                         label=""
-                        value={this.state.newLanguage.name}
-                        controlFunc={this.handleChange}
+                        value={this.state.editLanguage.name}
+                        controlFunc={this.handleEditChange}
                         maxLength={80}
                         placeholder="Edit Language"
                         errorMessage="Please enter a valid Language"
@@ -365,8 +378,8 @@ export default class Language extends React.Component {
                 </td>
                 <td>
                     <select
-                        onChange={this.handleChange}
-                        value={this.state.newLanguage.level}
+                        onChange={this.handleEditChange}
+                        value={this.state.editLanguage.level}
                         name="level"
                     >
                         <option value="">Language Level</option>

@@ -3,7 +3,7 @@ import React from 'react';
 import Cookies from 'js-cookie';
 import { Icon } from 'semantic-ui-react'
 import { ChildSingleInput } from '../Form/SingleInput.jsx';
-
+import { validateRequiredFields } from '../Form/validation.jsx';
 export default class Skill extends React.Component {
     constructor(props) {
         super(props);
@@ -17,14 +17,12 @@ export default class Skill extends React.Component {
         this.state = {
             showAddSection: false,
             showEditSection: false,
-            newSkill: [],
-            validationError: {
-                name: '',
-                level: '',
-            },
+            addSkill: { name: '', level: '' },
+            editSkill: { id: '', name: '', level: '' },
         }
 
-        this.handleChange = this.handleChange.bind(this);
+        this.handleAddChange = this.handleAddChange.bind(this);
+        this.handleEditChange = this.handleEditChange.bind(this);
         this.renderAddSkill = this.renderAddSkill.bind(this);
         this.closeAdd = this.closeAdd.bind(this);
         this.openAdd = this.openAdd.bind(this);
@@ -33,87 +31,100 @@ export default class Skill extends React.Component {
         this.closeEdit = this.closeEdit.bind(this);
     };
 
-
-    closeAdd() {
-        this.setState({ showAddSection: false });
-    }
-
     openAdd() {
         this.setState({
             showAddSection: true,
         });
     }
 
+    closeAdd() {
+        this.setState({ showAddSection: false, addSkill: { name: '', level: '' } });
+    }
+
     openEdit(selectedSkillId) {
+        if (!selectedSkillId) {
+            TalentUtil.notification.show("Please select skill to edit", "error", null, null);
+            return;
+        }
         const skillData = Object.assign([], this.props.skillData);
         const selectedSkill = skillData.find(skill => skill.id === selectedSkillId);
-        this.setState({ showEditSection: true, newSkill: selectedSkill });
+        this.setState({ showEditSection: true, editSkill: selectedSkill });
     }
 
     closeEdit() {
-        this.setState({ showEditSection: false, newSkill: [] });
+        this.setState({ showEditSection: false, editSkill: { id: '', name: '', level: '' } });
     }
 
-    handleChange(event) {
+    handleAddChange(event) {
         const { name, value } = event.target;
-        const data = Object.assign({}, this.state.newSkill);
+        const data = Object.assign({}, this.state.addSkill);
         data[name] = value;
-
-        let errorMessage = '';
-        if (name === 'name' && value.trim() === '') {
-            errorMessage = 'Please enter Skill';
-        } else if (name === 'level' && value.trim() === '') {
-            errorMessage = 'Please select Skill Level';
-        }
-
-        const newValidationError = Object.assign({}, this.state.validationError);
-        newValidationError[name] = errorMessage;
-
         this.setState({
-            newSkill: data,
-            validationError: newValidationError,
+            addSkill: data
+        });
+    }
+
+    handleEditChange(event) {
+        const { name, value } = event.target;
+        const data = Object.assign({}, this.state.editSkill);
+        data[name] = value;
+        this.setState({
+            editSkill: data
         });
     }
 
     handleSkillSave() {
         const data = Object.assign([], this.props.skillData);
-        data.push(this.state.newSkill);
+        data.push(this.state.addSkill);
         this.props.controlFunc(this.props.componentId, { skills: data });
         this.closeAdd();
         this.setState({
-            newSkill: []
+            addSkill: []
         });
     }
 
     handleSkillDelete(selectedSkillId) {
+        if (!selectedSkillId) {
+            TalentUtil.notification.show("Please select skill to delete", "error", null, null);
+            return;
+        }
         const data = Object.assign([], this.props.skillData);
         const deletedData = data.filter(skill => skill.id !== selectedSkillId);
         this.props.controlFunc(this.props.componentId, { skills: deletedData });
-        this.setState({
-            newSkill: []
-        });
     }
 
     handleSkillEdit(selectedSkillId) {
+        if (!selectedSkillId) {
+            TalentUtil.notification.show("Please select skill to edit", "error", null, null);
+            return;
+        }
         let data = Object.assign([], this.props.skillData);
         const skillToUpdate = data.findIndex(item => item.id === selectedSkillId);
         const updatedArray = [
             ...data.slice(0, skillToUpdate),
-            this.state.newSkill,
+            this.state.editSkill,
             ...data.slice(skillToUpdate + 1)
         ];
         data = updatedArray;
         this.props.controlFunc(this.props.componentId, { skills: data });
         this.closeEdit();
         this.setState({
-            newSkill: []
+            editSkill: []
         });
     }
    
     saveSkill() {
-        const { name, level } = this.state.newSkill;
-        if (!name || !level) {
-            TalentUtil.notification.show("Please enter skill and level", "error", null, null);
+        const { name, level } = this.state.addSkill;
+        const requiredFields = {
+            "Skill Name": name,
+            "Skill Level": level
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else {
             const skillToSave = {
@@ -135,22 +146,20 @@ export default class Skill extends React.Component {
                     success: function (res) {
                         if (res.success) {
                             this.setState({
-                                newSkill: {
-                                    name: this.state.newSkill.name,
-                                    level: this.state.newSkill.level,
+                                addSkill: {
+                                    name: this.state.addSkill.name,
+                                    level: this.state.addSkill.level,
                                     id: res.skill.id
                                 }
                             });
                             this.handleSkillSave();
                         }
                         else {
-                            console.log(res);
+                            TalentUtil.notification.show("Skill did not save successfully", "error", null, null);
                         }
                     }.bind(this),
-                    error: function (res, a, b) {
-                        console.log(res);
-                        console.log(a);
-                        console.log(b);
+                    error: function (res) {
+                        console.error('Error:', res.status);
                     }
                 })
             }
@@ -161,9 +170,21 @@ export default class Skill extends React.Component {
     }
 
     editSkill(selectedSkillId) {
-        const { name, level } = this.state.newSkill;
-        if (!name || !level) {
-            TalentUtil.notification.show("Please enter skill and level", "error", null, null);
+        if (!selectedSkillId) {
+            TalentUtil.notification.show("Please select skill to edit", "error", null, null);
+            return;
+        }
+        const { name, level } = this.state.editSkill;
+        const requiredFields = {
+            "Skill Name": name,
+            "Skill Level": level
+        };
+
+        const errorMessage = validateRequiredFields(requiredFields);
+
+        if (errorMessage) {
+            TalentUtil.notification.show(errorMessage, "error", null, null);
+            return;
         }
         else {
             const skillToedit = {
@@ -186,13 +207,11 @@ export default class Skill extends React.Component {
                             this.handleSkillEdit(selectedSkillId);
                         }
                         else {
-                            console.log(res);
+                            TalentUtil.notification.show("Skill did not edit successfully", "error", null, null);
                         }
                     }.bind(this),
-                    error: function (res, a, b) {
-                        console.log(res);
-                        console.log(a);
-                        console.log(b);
+                    error: function (res) {
+                        console.error('Error:', res.status);
                     }
                 })
             }
@@ -203,6 +222,10 @@ export default class Skill extends React.Component {
     }
 
     deleteSkill(selectedSkillId) {
+        if (!selectedSkillId) {
+            TalentUtil.notification.show("Please select skill to delete", "error", null, null);
+            return;
+        }
         let cookies = Cookies.get('talentAuthToken');
         try {
             $.ajax({
@@ -223,10 +246,8 @@ export default class Skill extends React.Component {
                     }
 
                 }.bind(this),
-                error: function (res, a, b) {
-                    console.log(res);
-                    console.log(a);
-                    console.log(b);
+                error: function (res) {
+                    console.error('Error:', res.status);
                 }
             })
         }
@@ -266,7 +287,7 @@ export default class Skill extends React.Component {
         const Skills = Array.isArray(this.props.skillData) ? this.props.skillData : [];
         return (
             Skills.map((skill) => (
-                this.state.showEditSection && this.state.newSkill.id === skill.id
+                this.state.showEditSection && this.state.editSkill.id === skill.id
                     ? this.renderEdit(skill)
                     : this.renderTableRow(skill)
             ))
@@ -303,22 +324,17 @@ export default class Skill extends React.Component {
                             inputType="text"
                             name="name"
                             label=""
-                            controlFunc={this.handleChange}
+                            controlFunc={this.handleAddChange}
                             maxLength={80}
                             placeholder="Add Skill"
                             errorMessage="Please enter a valid Skill"
                         />
-                        {this.state.validationError.name && (
-                            <div className="ui pointing red basic label">
-                                {this.state.validationError.name}
-                            </div>
-                        )}
                     </div>
                     <div className='four wide field'>
                         <div className='field'>
                             <label></label>
                             <select
-                                onChange={this.handleChange}
+                                onChange={this.handleAddChange}
                                 name="level"
                             >
                                 <option value="">Skill Level</option>
@@ -327,11 +343,6 @@ export default class Skill extends React.Component {
                                 <option value="Expert">Expert</option>
                             </select>
                         </div>
-                        {this.state.validationError.level && (
-                            <div className="ui pointing red basic label">
-                                {this.state.validationError.level}
-                            </div>
-                        )}
                     </div>
                     <div className='six wide field'>
                         <div className='field'>
@@ -353,8 +364,8 @@ export default class Skill extends React.Component {
                         inputType="text"
                         name="name"
                         label=""
-                        value={this.state.newSkill.name}
-                        controlFunc={this.handleChange}
+                        value={this.state.editSkill.name}
+                        controlFunc={this.handleEditChange}
                         maxLength={80}
                         placeholder="Edit Skill"
                         errorMessage="Please enter a valid Language"
@@ -362,8 +373,8 @@ export default class Skill extends React.Component {
                 </td>
                 <td>
                     <select
-                        onChange={this.handleChange}
-                        value={this.state.newSkill.level}
+                        onChange={this.handleEditChange}
+                        value={this.state.editSkill.level}
                         name="level"
                     >
                         <option value="">Skill Level</option>
